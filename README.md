@@ -25,32 +25,234 @@ Aplicación web local desarrollada en Python con Flask para el registro, consult
 
 ## Requisitos del Sistema
 
-- Python 3.9 o superior
+- **Python 3.12.x** (recomendado para compatibilidad completa)
+  - Python 3.14 puede tener problemas con algunos paquetes que requieren compilación
+  - Python 3.11 o 3.12 es la versión más estable para este proyecto
 - pip (gestor de paquetes de Python)
 - Navegador web moderno (Chrome, Firefox, Edge)
 
-## Instalación Rápida
+## Instalación y Configuración Inicial
+
+### 1. Clonar o Descargar el Proyecto
 
 ```bash
-# Clonar o descargar el proyecto
+git clone <url-del-repositorio>
 cd analizador_articulos
+```
 
-# Crear entorno virtual
-python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
+### 2. Crear Ambiente Virtual
 
-# Instalar dependencias
+**Windows (usando Python 3.12 específicamente):**
+
+```bash
+# Verificar que tienes Python 3.12 instalado
+py -3.12 --version
+
+# Crear ambiente virtual con Python 3.12
+py -3.12 -m venv venv
+
+# Activar el ambiente
+venv\Scripts\activate
+```
+
+**Linux/Mac (usando Python 3.12 específicamente):**
+
+```bash
+# Verificar que tienes Python 3.12 instalado
+python3.12 --version
+
+# Crear ambiente virtual con Python 3.12
+python3.12 -m venv venv
+
+# Activar el ambiente
+source venv/bin/activate
+```
+
+> **Importante**: Usa Python 3.12 para evitar problemas de compatibilidad. El ambiente virtual `venv/` contiene todas las dependencias del proyecto aisladas del sistema. Siempre activa el ambiente antes de trabajar en el proyecto.
+>
+> Si no tienes Python 3.12, descárgalo desde [python.org](https://www.python.org/downloads/) o usa tu gestor de paquetes del sistema.
+
+### 3. Instalar Dependencias
+
+```bash
 pip install -r requirements.txt
+```
 
-# Inicializar base de datos
+Esto instalará todas las librerías necesarias:
+
+- Flask, SQLAlchemy, Flask-Migrate (framework y base de datos)
+- fuzzywuzzy, python-Levenshtein (matching de autores)
+- PyPDF2, pdfplumber, pikepdf (extracción de PDFs)
+- openpyxl (exportación a Excel)
+- regex (expresiones regulares avanzadas)
+- Y más...
+
+> **Nota**: Con Python 3.12, todos los paquetes se instalan correctamente, incluyendo pikepdf y regex que requieren compilación C++.
+
+### 4. Inicializar la Base de Datos
+
+#### Opción A: Usando Migraciones (Recomendado)
+
+Si es la primera vez o el proyecto ya tiene migraciones:
+
+```bash
+# Crear la base de datos con el esquema actual
 flask db upgrade
 
-# Ejecutar aplicación
+# Poblar catálogos iniciales (tipos de producción, estados, países, etc.)
+python scripts/seed_catalogs.py
+```
+
+#### Opción B: Crear desde Cero
+
+Si quieres recrear completamente la base de datos:
+
+```bash
+# Eliminar base de datos anterior (si existe)
+del articulos.db  # Windows
+rm articulos.db   # Linux/Mac
+
+# Crear todas las tablas
+python -c "from app import create_app, db; app = create_app(); app.app_context().push(); db.create_all(); print('✓ Base de datos creada')"
+
+# Poblar catálogos iniciales
+python scripts/seed_catalogs.py
+```
+
+### 5. Ejecutar la Aplicación
+
+```bash
 python run.py
 ```
 
-La aplicación estará disponible en: `http://localhost:5000`
+La aplicación estará disponible en: **http://localhost:5000**
+
+### 6. Verificar la Instalación
+
+Abre tu navegador y accede a `http://localhost:5000`. Deberías ver:
+
+- La página de inicio con el menú de navegación
+- Secciones: Inicio, Artículos, Subir PDF, Catálogos, Reportes
+- Interfaz con Bootstrap 5
+
+## Scripts Útiles
+
+### Poblar Catálogos
+
+```bash
+python scripts/seed_catalogs.py
+```
+
+Crea registros iniciales en:
+
+- Tipos de producción (8 tipos)
+- Propósitos (6 propósitos)
+- Estados (9 estados)
+- LGAC (3 ejemplos - **personalizar según tu CA**)
+- Indexaciones (13 indexaciones)
+- Países (20 países)
+
+### Actualizar Nombres Normalizados de Autores
+
+```bash
+python scripts/actualizar_nombres_normalizados.py
+```
+
+Actualiza el campo `nombre_normalizado` para todos los autores existentes. Ejecutar después de importaciones masivas.
+
+## Desactivar el Ambiente Virtual
+
+Cuando termines de trabajar:
+
+```bash
+deactivate
+```
+
+## Solución de Problemas Comunes
+
+### Error: "python no es reconocido" o "Python 3.12 no encontrado"
+
+**Problema**: No tienes Python 3.12 instalado o no está en el PATH.
+
+**Solución**:
+
+1. Descarga Python 3.12.x desde [python.org](https://www.python.org/downloads/)
+2. Durante la instalación, marca "Add Python to PATH"
+3. Verifica la instalación:
+   ```bash
+   py -3.12 --version  # Windows
+   python3.12 --version  # Linux/Mac
+   ```
+
+### Error al compilar pikepdf o regex
+
+**Problema**: Estás usando Python 3.14 u otra versión incompatible.
+
+**Solución**:
+
+1. Elimina el ambiente virtual: `Remove-Item -Recurse venv` (Windows) o `rm -rf venv` (Linux/Mac)
+2. Instala Python 3.12 si no lo tienes
+3. Recrea el ambiente con Python 3.12:
+   ```bash
+   py -3.12 -m venv venv  # Windows
+   python3.12 -m venv venv  # Linux/Mac
+   ```
+4. Activa e instala: `venv\Scripts\activate; pip install -r requirements.txt`
+
+### Error: "flask: command not found"
+
+Asegúrate de que el ambiente virtual está activado:
+
+```bash
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+```
+
+### Error: "No module named 'flask'"
+
+Instala las dependencias con el ambiente activado:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Error: "Can't locate revision..."
+
+La base de datos tiene un estado inconsistente. Solución:
+
+```bash
+# Opción 1: Eliminar y recrear
+del articulos.db
+flask db upgrade
+python scripts/seed_catalogs.py
+
+# Opción 2: Limpiar migraciones
+del articulos.db
+rmdir /s migrations  # Windows
+rm -rf migrations    # Linux/Mac
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+python scripts/seed_catalogs.py
+```
+
+### Base de Datos Bloqueada
+
+Si ves "database is locked":
+
+1. Cierra todos los procesos que usen la base de datos
+2. Reinicia el servidor Flask
+3. En desarrollo, SQLite solo permite una conexión de escritura
+
+## Actualización del Proyecto
+
+Para obtener cambios recientes:
+
+```bash
+git pull origin main
+pip install -r requirements.txt  # Por si hay nuevas dependencias
+flask db upgrade                  # Aplicar nuevas migraciones
+```
 
 ## Estructura del Proyecto
 
