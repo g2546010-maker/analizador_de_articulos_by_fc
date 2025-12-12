@@ -91,33 +91,38 @@ Esto instalará todas las librerías necesarias:
 
 ### 4. Inicializar la Base de Datos
 
-#### Opción A: Usando Migraciones (Recomendado)
+La base de datos se crea automáticamente en la carpeta `instance/` al ejecutar las migraciones.
 
-Si es la primera vez o el proyecto ya tiene migraciones:
+#### Primera vez iniciando el proyecto:
 
 ```bash
-# Crear la base de datos con el esquema actual
+# Aplicar las migraciones existentes para crear la base de datos
 flask db upgrade
 
 # Poblar catálogos iniciales (tipos de producción, estados, países, etc.)
 python scripts/seed_catalogs.py
 ```
 
-#### Opción B: Crear desde Cero
+**¡Importante!** Ejecuta `seed_catalogs.py` solo la primera vez. Este script llena las tablas de catálogos con datos iniciales necesarios para el funcionamiento del sistema.
 
-Si quieres recrear completamente la base de datos:
+#### Si necesitas reiniciar la base de datos:
 
 ```bash
-# Eliminar base de datos anterior (si existe)
-del articulos.db  # Windows
-rm articulos.db   # Linux/Mac
+# Eliminar la base de datos existente
+# Windows:
+Remove-Item instance\articulos.db
 
-# Crear todas las tablas
-python -c "from app import create_app, db; app = create_app(); app.app_context().push(); db.create_all(); print('✓ Base de datos creada')"
+# Linux/Mac:
+rm instance/articulos.db
 
-# Poblar catálogos iniciales
+# Volver a crear aplicando migraciones
+flask db upgrade
+
+# Poblar catálogos
 python scripts/seed_catalogs.py
 ```
+
+> **Nota sobre migraciones**: Este proyecto usa Flask-Migrate (Alembic) para control de versiones de la base de datos. Nunca uses `db.create_all()` directamente ya que esto omite el sistema de migraciones. Siempre usa `flask db upgrade` para crear o actualizar la base de datos.
 
 ### 5. Ejecutar la Aplicación
 
@@ -159,6 +164,27 @@ python scripts/actualizar_nombres_normalizados.py
 ```
 
 Actualiza el campo `nombre_normalizado` para todos los autores existentes. Ejecutar después de importaciones masivas.
+
+## Ubicación de Archivos Importantes
+
+### Base de Datos
+
+La base de datos SQLite se guarda en: `instance/articulos.db`
+
+**Importante**: La carpeta `instance/` está incluida en `.gitignore` para evitar subir datos locales al repositorio. Cada desarrollador tendrá su propia base de datos local.
+
+### Migraciones
+
+Las migraciones de la base de datos se encuentran en: `migrations/versions/`
+
+Estas **SÍ se incluyen** en el repositorio para mantener sincronizado el esquema de la base de datos entre todos los desarrolladores.
+
+### Archivos Subidos
+
+- PDFs cargados: `uploads/pdfs/`
+- Archivos Excel exportados: `exports/excel/`
+
+Estas carpetas también están en `.gitignore`.
 
 ## Desactivar el Ambiente Virtual
 
@@ -216,22 +242,39 @@ Instala las dependencias con el ambiente activado:
 pip install -r requirements.txt
 ```
 
-### Error: "Can't locate revision..."
+### Error: "Can't locate revision..." o problemas con migraciones
 
-La base de datos tiene un estado inconsistente. Solución:
+La base de datos tiene un estado inconsistente con las migraciones. Solución:
 
 ```bash
-# Opción 1: Eliminar y recrear
-del articulos.db
+# Windows:
+Remove-Item instance\articulos.db
+flask db upgrade
+python scripts\seed_catalogs.py
+
+# Linux/Mac:
+rm instance/articulos.db
 flask db upgrade
 python scripts/seed_catalogs.py
+```
 
-# Opción 2: Limpiar migraciones
-del articulos.db
-rmdir /s migrations  # Windows
-rm -rf migrations    # Linux/Mac
+**Si el problema persiste** (migraciones corruptas), reinicia el sistema de migraciones:
+
+```bash
+# ADVERTENCIA: Esto elimina el historial de migraciones
+# Windows:
+Remove-Item instance\articulos.db
+Remove-Item -Recurse -Force migrations
 flask db init
-flask db migrate -m "Initial migration"
+flask db migrate -m "Migracion inicial"
+flask db upgrade
+python scripts\seed_catalogs.py
+
+# Linux/Mac:
+rm instance/articulos.db
+rm -rf migrations
+flask db init
+flask db migrate -m "Migracion inicial"
 flask db upgrade
 python scripts/seed_catalogs.py
 ```

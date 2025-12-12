@@ -16,8 +16,13 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # Base de datos
+    # La BD se guarda en la carpeta instance/ por defecto en Flask
+    instance_path = os.path.join(basedir, 'instance')
+    if not os.path.exists(instance_path):
+        os.makedirs(instance_path)
+    
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'articulos.db')
+        'sqlite:///' + os.path.join(instance_path, 'articulos.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Uploads
