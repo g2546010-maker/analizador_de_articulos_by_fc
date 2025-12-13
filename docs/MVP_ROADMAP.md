@@ -75,15 +75,15 @@ Este documento presenta el roadmap detallado para implementar el MVP (Producto M
    - [x] `ArticleController.delete()` - Eliminación lógica
    - [x] Implementar manejo de errores
 
-7. **Vistas (Routes)** (2 días)
+7. **Vistas (Routes)** (2 días) ✅
 
-   - [ ] `GET /articles` - Lista de artículos
-   - [ ] `GET /articles/new` - Formulario crear
-   - [ ] `POST /articles/new` - Procesar creación
-   - [ ] `GET /articles/<id>` - Detalle
-   - [ ] `GET /articles/<id>/edit` - Formulario editar
-   - [ ] `POST /articles/<id>/edit` - Procesar edición
-   - [ ] `POST /articles/<id>/delete` - Eliminar
+   - [x] `GET /articles` - Lista de artículos
+   - [x] `GET /articles/new` - Formulario crear
+   - [x] `POST /articles/new` - Procesar creación
+   - [x] `GET /articles/<id>` - Detalle
+   - [x] `GET /articles/<id>/edit` - Formulario editar
+   - [x] `POST /articles/<id>/edit` - Procesar edición
+   - [x] `POST /articles/<id>/delete` - Eliminar
 
 8. **Templates** (2 días)
    - [ ] `articles/list.html` - Tabla de artículos
