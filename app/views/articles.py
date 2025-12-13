@@ -218,7 +218,7 @@ def delete(id):
     
     if error:
         flash(f'Error al eliminar artículo: {error}', 'error')
-        return redirect(url_for('articles.show', id=id))
+        return redirect(url_for('articles.index'))
     
     tipo_eliminacion = 'permanentemente' if hard_delete else 'lógicamente'
     flash(f'Artículo eliminado {tipo_eliminacion}', 'success')

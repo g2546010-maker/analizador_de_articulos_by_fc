@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}{{ articulo.titulo }} - SGAA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('articles.index') }}">Artículos</a></li>
+                    <li class="breadcrumb-item active">Detalles</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 col-xl-8">
+            <!-- Cabecera con título y acciones -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="h3 mb-2">{{ articulo.titulo }}</h1>
+                            {% if articulo.titulo_ingles %}
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-translate"></i> {{ articulo.titulo_ingles }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('articles.edit', id=articulo.id) }}" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            {% if articulo.activo == false %}
+                                <button type="button" 
+                                        class="btn btn-outline-success"
+                                        onclick="confirmRestore()">
+                                    <i class="bi bi-arrow-clockwise"></i> Restaurar
+                                </button>
+                            {% else %}
+                                <button type="button" 
+                                        class="btn btn-outline-danger"
+                                        onclick="confirmDelete()">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Badges de estado -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-info">
+                            <i class="bi bi-bookmark"></i>
+                            {{ articulo.tipo_produccion.nombre if articulo.tipo_produccion else 'Sin tipo' }}
+                        </span>
+                        {% if articulo.estado %}
+                            <span class="badge" style="background-color: {{ articulo.estado.color or '#6c757d' }}">
+                                <i class="bi bi-circle-fill"></i>
+                                {{ articulo.estado.nombre }}
+                            </span>
+                        {% endif %}
+                        {% if articulo.quartil %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-award"></i>
+                                {{ articulo.quartil }}
+                            </span>
+                        {% endif %}
+                        {% if articulo.activo == false %}
+                            <span class="badge bg-danger">
+                                <i class="bi bi-trash"></i>
+                                Eliminado
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de publicación -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-journal"></i> Información de Publicación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if articulo.titulo_revista %}
+                            <div class="col-md-12 mb-3">
+                                <label class="text-muted small mb-1">Revista/Publicación</label>
+                                <p class="mb-0"><strong>{{ articulo.titulo_revista }}</strong></p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.nombre_congreso %}
+                            <div class="col-md-12 mb-3">
+                                <label class="text-muted small mb-1">Congreso</label>
+                                <p class="mb-0"><strong>{{ articulo.nombre_congreso }}</strong></p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.anio_publicacion %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Año de Publicación</label>
+                                <p class="mb-0">{{ articulo.anio_publicacion }}</p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.volumen or articulo.numero %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Volumen / Número</label>
+                                <p class="mb-0">
+                                    {% if articulo.volumen %}Vol. {{ articulo.volumen }}{% endif %}
+                                    {% if articulo.volumen and articulo.numero %}, {% endif %}
+                                    {% if articulo.numero %}No. {{ articulo.numero }}{% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.pagina_inicio or articulo.pagina_fin %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Páginas</label>
+                                <p class="mb-0">
+                                    {% if articulo.pagina_inicio %}{{ articulo.pagina_inicio }}{% endif %}
+                                    {% if articulo.pagina_inicio and articulo.pagina_fin %} - {% endif %}
+                                    {% if articulo.pagina_fin %}{{ articulo.pagina_fin }}{% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.quartil %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Quartil</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-warning text-dark">{{ articulo.quartil }}</span>
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.factor_impacto %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Factor de Impacto</label>
+                                <p class="mb-0">{{ articulo.factor_impacto }}</p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.citas %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Citas</label>
+                                <p class="mb-0">{{ articulo.citas }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identificadores -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-fingerprint"></i> Identificadores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if articulo.doi %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">DOI</label>
+                                <p class="mb-0">
+                                    <a href="https://doi.org/{{ articulo.doi }}" target="_blank" rel="noopener">
+                                        {{ articulo.doi }} <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.issn %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">ISSN</label>
+                                <p class="mb-0">{{ articulo.issn }}</p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.url %}
+                            <div class="col-md-12 mb-3">
+                                <label class="text-muted small mb-1">URL</label>
+                                <p class="mb-0">
+                                    <a href="{{ articulo.url }}" target="_blank" rel="noopener">
+                                        {{ articulo.url }} <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clasificación y categorización -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-tags"></i> Clasificación y Categorización
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if articulo.lgac %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">LGAC</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-secondary">{{ articulo.lgac.nombre }}</span>
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.proposito %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Propósito</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-info">{{ articulo.proposito.nombre }}</span>
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small mb-1">Para Currículum</label>
+                            <p class="mb-0">
+                                {% if articulo.para_curriculum %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Sí</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> No</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadatos -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i> Metadatos del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small mb-1">ID del Artículo</label>
+                            <p class="mb-0"><code>{{ articulo.id }}</code></p>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small mb-1">Fecha de Registro</label>
+                            <p class="mb-0">
+                                {{ articulo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if articulo.fecha_creacion else 'N/A' }}
+                            </p>
+                        </div>
+
+                        {% if articulo.fecha_actualizacion %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Última Actualización</label>
+                                <p class="mb-0">
+                                    {{ articulo.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') }}
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if articulo.fecha_eliminacion %}
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small mb-1">Fecha de Eliminación</label>
+                                <p class="mb-0 text-danger">
+                                    {{ articulo.fecha_eliminacion.strftime('%d/%m/%Y %H:%M') }}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón volver -->
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('articles.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a la lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar este artículo?</p>
+                <p><strong>{{ articulo.titulo }}</strong></p>
+                <p class="text-muted small">Esta acción se puede revertir posteriormente.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('articles.delete', id=articulo.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de restauración -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-clockwise"></i> Confirmar restauración
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea restaurar este artículo?</p>
+                <p><strong>{{ articulo.titulo }}</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('articles.restore', id=articulo.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-arrow-clockwise"></i> Restaurar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    function confirmRestore() {
+        const modal = new bootstrap.Modal(document.getElementById('restoreModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}

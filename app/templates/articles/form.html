@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if articulo else 'Nuevo' }} Artículo - SGAA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('articles.index') }}">Artículos</a></li>
+                    <li class="breadcrumb-item active">{{ 'Editar' if articulo else 'Nuevo' }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2">
+                <i class="bi bi-{{ 'pencil-square' if articulo else 'plus-circle' }}"></i>
+                {{ 'Editar Artículo' if articulo else 'Nuevo Artículo' }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Información básica -->
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-info-circle"></i> Información Básica
+                        </h5>
+
+                        <!-- Título -->
+                        <div class="mb-3">
+                            {{ form.titulo.label(class="form-label required") }}
+                            {{ form.titulo(class="form-control" + (" is-invalid" if form.titulo.errors else "")) }}
+                            {% if form.titulo.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.titulo.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Título de revista -->
+                        <div class="mb-3">
+                            {{ form.titulo_revista.label(class="form-label") }}
+                            {{ form.titulo_revista(class="form-control" + (" is-invalid" if form.titulo_revista.errors else "")) }}
+                            {% if form.titulo_revista.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.titulo_revista.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Clasificación -->
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-tags"></i> Clasificación
+                        </h5>
+
+                        <div class="row">
+                            <!-- Tipo de producción -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.tipo_produccion_id.label(class="form-label required") }}
+                                {{ form.tipo_produccion_id(class="form-select" + (" is-invalid" if form.tipo_produccion_id.errors else "")) }}
+                                {% if form.tipo_produccion_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.tipo_produccion_id.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Estado -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.estado_id.label(class="form-label required") }}
+                                {{ form.estado_id(class="form-select" + (" is-invalid" if form.estado_id.errors else "")) }}
+                                {% if form.estado_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.estado_id.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Propósito -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.proposito_id.label(class="form-label") }}
+                                {{ form.proposito_id(class="form-select" + (" is-invalid" if form.proposito_id.errors else "")) }}
+                                {% if form.proposito_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.proposito_id.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- LGAC -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.lgac_id.label(class="form-label") }}
+                                {{ form.lgac_id(class="form-select" + (" is-invalid" if form.lgac_id.errors else "")) }}
+                                {% if form.lgac_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.lgac_id.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Información de publicación -->
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-journal"></i> Información de Publicación
+                        </h5>
+
+                        <div class="row">
+                            <!-- Año de publicación -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.anio_publicacion.label(class="form-label") }}
+                                {{ form.anio_publicacion(class="form-control" + (" is-invalid" if form.anio_publicacion.errors else ""), type="number", min="1900", max="2100") }}
+                                {% if form.anio_publicacion.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.anio_publicacion.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- ISSN -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.issn.label(class="form-label") }}
+                                {{ form.issn(class="form-control" + (" is-invalid" if form.issn.errors else "")) }}
+                                {% if form.issn.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.issn.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Volumen -->
+                            <div class="col-md-4 mb-3">
+                                {{ form.volumen.label(class="form-label") }}
+                                {{ form.volumen(class="form-control" + (" is-invalid" if form.volumen.errors else "")) }}
+                                {% if form.volumen.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.volumen.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Número -->
+                            <div class="col-md-4 mb-3">
+                                {{ form.numero.label(class="form-label") }}
+                                {{ form.numero(class="form-control" + (" is-invalid" if form.numero.errors else "")) }}
+                                {% if form.numero.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.numero.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Quartil -->
+                            <div class="col-md-4 mb-3">
+                                {{ form.quartil.label(class="form-label") }}
+                                {{ form.quartil(class="form-select" + (" is-invalid" if form.quartil.errors else "")) }}
+                                {% if form.quartil.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.quartil.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Página inicio -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.pagina_inicio.label(class="form-label") }}
+                                {{ form.pagina_inicio(class="form-control" + (" is-invalid" if form.pagina_inicio.errors else ""), type="number", min="1") }}
+                                {% if form.pagina_inicio.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.pagina_inicio.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Página fin -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.pagina_fin.label(class="form-label") }}
+                                {{ form.pagina_fin(class="form-control" + (" is-invalid" if form.pagina_fin.errors else ""), type="number", min="1") }}
+                                {% if form.pagina_fin.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.pagina_fin.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Nombre congreso -->
+                        <div class="mb-3">
+                            {{ form.nombre_congreso.label(class="form-label") }}
+                            {{ form.nombre_congreso(class="form-control" + (" is-invalid" if form.nombre_congreso.errors else "")) }}
+                            {% if form.nombre_congreso.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.nombre_congreso.errors[0] }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Solo para conference papers</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Identificadores y métricas -->
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-link-45deg"></i> Identificadores y Métricas
+                        </h5>
+
+                        <!-- DOI -->
+                        <div class="mb-3">
+                            {{ form.doi.label(class="form-label") }}
+                            {{ form.doi(class="form-control" + (" is-invalid" if form.doi.errors else "")) }}
+                            {% if form.doi.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.doi.errors[0] }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Digital Object Identifier (DOI)</small>
+                        </div>
+
+                        <!-- URL -->
+                        <div class="mb-3">
+                            {{ form.url.label(class="form-label") }}
+                            {{ form.url(class="form-control" + (" is-invalid" if form.url.errors else "")) }}
+                            {% if form.url.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.url.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <!-- Factor de impacto -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.factor_impacto.label(class="form-label") }}
+                                {{ form.factor_impacto(class="form-control" + (" is-invalid" if form.factor_impacto.errors else ""), type="number", step="0.001", min="0") }}
+                                {% if form.factor_impacto.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.factor_impacto.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Citas -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.citas.label(class="form-label") }}
+                                {{ form.citas(class="form-control" + (" is-invalid" if form.citas.errors else ""), type="number", min="0") }}
+                                {% if form.citas.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.citas.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Para curriculum -->
+                        <div class="mb-3 form-check">
+                            {{ form.para_curriculum(class="form-check-input" + (" is-invalid" if form.para_curriculum.errors else "")) }}
+                            {{ form.para_curriculum.label(class="form-check-label") }}
+                            {% if form.para_curriculum.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.para_curriculum.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('articles.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> {{ 'Actualizar' if articulo else 'Crear' }} Artículo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .required::after {
+        content: " *";
+        color: #dc3545;
+    }
+</style>
+{% endblock %}

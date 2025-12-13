@@ -85,12 +85,12 @@ Este documento presenta el roadmap detallado para implementar el MVP (Producto M
    - [x] `POST /articles/<id>/edit` - Procesar edición
    - [x] `POST /articles/<id>/delete` - Eliminar
 
-8. **Templates** (2 días)
-   - [ ] `articles/list.html` - Tabla de artículos
-   - [ ] `articles/form.html` - Formulario (crear/editar)
-   - [ ] `articles/detail.html` - Vista detallada
-   - [ ] Agregar paginación
-   - [ ] Agregar mensajes flash
+8. **Templates** (2 días) ✅
+   - [x] `articles/list.html` - Tabla de artículos
+   - [x] `articles/form.html` - Formulario (crear/editar)
+   - [x] `articles/detail.html` - Vista detallada
+   - [x] Agregar paginación
+   - [x] Agregar mensajes flash
 
 **Entregables**:
 

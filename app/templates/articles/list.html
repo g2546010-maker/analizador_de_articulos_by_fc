@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Artículos - SGAA{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2">
+                <i class="bi bi-file-text"></i>
+                Artículos Académicos
+            </h1>
+            <p class="text-muted">Gestión de producción científica</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('articles.new') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Artículo
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros de búsqueda -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel"></i> Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('articles.index') }}" class="row g-3">
+                <!-- Búsqueda por texto -->
+                <div class="col-md-4">
+                    <label for="query" class="form-label">Búsqueda por texto</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="query" 
+                           name="query" 
+                           placeholder="Título o revista..."
+                           value="{{ request.args.get('query', '') }}">
+                </div>
+
+                <!-- Filtro por tipo -->
+                <div class="col-md-2">
+                    <label for="tipo_id" class="form-label">Tipo</label>
+                    <select class="form-select" id="tipo_id" name="tipo_id">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por estado -->
+                <div class="col-md-2">
+                    <label for="estado_id" class="form-label">Estado</label>
+                    <select class="form-select" id="estado_id" name="estado_id">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por año -->
+                <div class="col-md-2">
+                    <label for="anio" class="form-label">Año</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="anio" 
+                           name="anio" 
+                           placeholder="Año..."
+                           value="{{ request.args.get('anio', '') }}">
+                </div>
+
+                <!-- Botones -->
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <a href="{{ url_for('articles.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de artículos -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                {% if pagination and pagination.total > 0 %}
+                    {{ pagination.total }} artículo{{ 's' if pagination.total != 1 }}
+                {% else %}
+                    Sin resultados
+                {% endif %}
+            </h5>
+            {% if pagination and pagination.total > 0 %}
+                <span class="text-muted">
+                    Página {{ pagination.page }} de {{ pagination.pages }}
+                </span>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            {% if pagination and pagination.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Título</th>
+                                <th style="width: 150px;">Tipo</th>
+                                <th style="width: 120px;">Estado</th>
+                                <th style="width: 80px;">Año</th>
+                                <th style="width: 150px;" class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for articulo in pagination.items %}
+                                <tr>
+                                    <td class="text-muted">{{ articulo.id }}</td>
+                                    <td>
+                                        <strong>{{ articulo.titulo }}</strong>
+                                        {% if articulo.titulo_revista %}
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-journal"></i> {{ articulo.titulo_revista }}
+                                            </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ articulo.tipo_produccion.nombre if articulo.tipo_produccion else 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if articulo.estado %}
+                                            <span class="badge" style="background-color: {{ articulo.estado.color or '#6c757d' }}">
+                                                {{ articulo.estado.nombre }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if articulo.anio_publicacion %}
+                                            {{ articulo.anio_publicacion }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end table-actions">
+                                        <a href="{{ url_for('articles.show', id=articulo.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('articles.edit', id=articulo.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary" 
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                title="Eliminar"
+                                                onclick="confirmDelete({{ articulo.id }}, '{{ articulo.titulo|safe }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if pagination.pages > 1 %}
+                    <div class="card-footer">
+                        <nav aria-label="Paginación de artículos">
+                            <ul class="pagination justify-content-center mb-0">
+                                <!-- Primera página -->
+                                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('articles.index', page=1) }}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Página anterior -->
+                                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.prev_num) if pagination.has_prev else '#' }}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Números de página -->
+                                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                            <a class="page-link" href="{{ url_for('articles.index', page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <!-- Página siguiente -->
+                                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.next_num) if pagination.has_next else '#' }}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Última página -->
+                                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('articles.index', page=pagination.pages) }}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h4 class="mt-3">No hay artículos</h4>
+                    <p class="text-muted">
+                        {% if request.args %}
+                            No se encontraron artículos con los filtros aplicados.
+                            <br>
+                            <a href="{{ url_for('articles.index') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="bi bi-x-circle"></i> Limpiar filtros
+                            </a>
+                        {% else %}
+                            Comienza agregando tu primer artículo.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar el artículo?</p>
+                <p><strong id="articleTitle"></strong></p>
+                <p class="text-muted small">Esta acción se puede revertir posteriormente.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(articleId, articleTitle) {
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        document.getElementById('articleTitle').textContent = articleTitle;
+        document.getElementById('deleteForm').action = "{{ url_for('articles.delete', id=0) }}".replace('0', articleId);
+        modal.show();
+    }
+</script>
+{% endblock %}
