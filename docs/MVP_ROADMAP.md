@@ -66,14 +66,14 @@ Este documento presenta el roadmap detallado para implementar el MVP (Producto M
    - [x] Crear campos dinámicos (SelectField para catálogos)
    - [x] Agregar validación de ISSN, DOI, año
 
-6. **Controladores** (3 días)
+6. **Controladores** (3 días) ✅
 
-   - [ ] `ArticleController.create()` - Crear artículo
-   - [ ] `ArticleController.get_all()` - Listar con paginación
-   - [ ] `ArticleController.get_by_id()` - Detalle
-   - [ ] `ArticleController.update()` - Editar
-   - [ ] `ArticleController.delete()` - Eliminación lógica
-   - [ ] Implementar manejo de errores
+   - [x] `ArticleController.create()` - Crear artículo
+   - [x] `ArticleController.get_all()` - Listar con paginación
+   - [x] `ArticleController.get_by_id()` - Detalle
+   - [x] `ArticleController.update()` - Editar
+   - [x] `ArticleController.delete()` - Eliminación lógica
+   - [x] Implementar manejo de errores
 
 7. **Vistas (Routes)** (2 días)
 

@@ -372,9 +372,22 @@ class Articulo(db.Model):
     def remover_autor(self, autor):
         """
         Remueve un autor del artículo y reorganiza los órdenes.
+        
+        Returns:
+            True si el autor fue removido, False si no estaba asociado
         """
         from app.models.relations import ArticuloAutor
         
+        # Verificar si existe la asociación antes de eliminarla
+        relacion = ArticuloAutor.query.filter_by(
+            articulo_id=self.id,
+            autor_id=autor.id
+        ).first()
+        
+        if not relacion:
+            return False
+        
+        # Eliminar la relación
         ArticuloAutor.query.filter_by(
             articulo_id=self.id,
             autor_id=autor.id
@@ -386,6 +399,8 @@ class Articulo(db.Model):
         
         for idx, aa in enumerate(autores, start=1):
             aa.orden = idx
+        
+        return True
     
     def agregar_indexacion(self, indexacion, fecha_verificacion=None):
         """
