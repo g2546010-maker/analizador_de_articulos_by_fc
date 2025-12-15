@@ -13,6 +13,9 @@
             <p class="text-muted">Gestión de producción científica</p>
         </div>
         <div class="col-md-4 text-end">
+            <button type="button" class="btn btn-outline-success me-2" id="btnExportExcel">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+            </button>
             <a href="{{ url_for('articles.upload_form') }}" class="btn btn-success me-2">
                 <i class="bi bi-cloud-upload"></i> Subir PDFs
             </a>
@@ -226,6 +229,36 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de confirmación de exportación -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="exportStats">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Calculando...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Calculando estadísticas...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnConfirmExport">
+                    <i class="bi bi-download"></i> Descargar Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -236,5 +269,100 @@
         document.getElementById('deleteForm').action = "{{ url_for('articles.delete', id=0) }}".replace('0', articleId);
         modal.show();
     }
+    
+    // Exportación a Excel
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnExportExcel = document.getElementById('btnExportExcel');
+        const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+        const btnConfirmExport = document.getElementById('btnConfirmExport');
+        
+        // Al hacer clic en exportar, mostrar modal con preview
+        btnExportExcel.addEventListener('click', function() {
+            exportModal.show();
+            
+            // Obtener estadísticas
+            const currentUrl = new URL(window.location.href);
+            const previewUrl = "{{ url_for('articles.export_preview') }}" + currentUrl.search;
+            
+            fetch(previewUrl)
+                .then(response => response.json())
+                .then(stats => {
+                    displayExportStats(stats);
+                })
+                .catch(error => {
+                    document.getElementById('exportStats').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Error al obtener estadísticas: ${error.message}
+                        </div>
+                    `;
+                });
+        });
+        
+        // Confirmar exportación
+        btnConfirmExport.addEventListener('click', function() {
+            const currentUrl = new URL(window.location.href);
+            const exportUrl = "{{ url_for('articles.export_excel') }}" + currentUrl.search;
+            window.location.href = exportUrl;
+            exportModal.hide();
+        });
+        
+        function displayExportStats(stats) {
+            if (stats.error) {
+                document.getElementById('exportStats').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Error: ${stats.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <h6 class="mb-3">Se exportarán los siguientes artículos:</h6>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total de artículos
+                        <span class="badge bg-primary rounded-pill">${stats.total}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Artículos completos
+                        <span class="badge bg-success rounded-pill">${stats.completos}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Artículos incompletos
+                        <span class="badge bg-warning rounded-pill">${stats.incompletos}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Para currículum
+                        <span class="badge bg-info rounded-pill">${stats.para_curriculum}</span>
+                    </li>
+                </ul>
+            `;
+            
+            // Mostrar distribución por año si hay datos
+            if (stats.por_anio && Object.keys(stats.por_anio).length > 0) {
+                html += '<h6 class="mb-2">Por año:</h6><ul class="list-unstyled mb-3">';
+                for (const [anio, count] of Object.entries(stats.por_anio)) {
+                    html += `<li><span class="text-muted">${anio}:</span> ${count} artículo${count !== 1 ? 's' : ''}</li>`;
+                }
+                html += '</ul>';
+            }
+            
+            if (stats.total === 0) {
+                html = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i>
+                        No hay artículos que coincidan con los filtros actuales.
+                    </div>
+                `;
+                btnConfirmExport.disabled = true;
+            } else {
+                btnConfirmExport.disabled = false;
+            }
+            
+            document.getElementById('exportStats').innerHTML = html;
+        }
+    });
 </script>
 {% endblock %}

@@ -1,8 +1,9 @@
 """
 Blueprint de artículos - CRUD y gestión de artículos
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify, send_file
 from app.controllers.article_controller import ArticleController
+from app.controllers.report_controller import ReportController
 from app.forms.article_form import ArticleForm, ArticleSearchForm
 from app.forms.utils import populate_form_choices
 from app.models import Articulo
@@ -435,3 +436,84 @@ def upload_pdfs():
             'success': False,
             'error': f'Error interno del servidor: {str(e)}'
         }), 500
+
+
+@articles_bp.route('/export')
+def export_excel():
+    """
+    Exporta artículos a Excel con filtros opcionales.
+    GET /articles/export?anio_inicio=2020&anio_fin=2024&tipo_produccion_id=1
+    """
+    try:
+        # Obtener filtros de la URL (mismos que en la lista)
+        filters = {
+            'tipo_id': request.args.get('tipo_id', type=int),
+            'estado_id': request.args.get('estado_id', type=int),
+            'lgac_id': request.args.get('lgac_id', type=int),
+            'anio_inicio': request.args.get('anio_inicio', type=int),
+            'anio_fin': request.args.get('anio_fin', type=int),
+            'autor_id': request.args.get('autor_id', type=int),
+            'indexacion_id': request.args.get('indexacion_id', type=int),
+            'para_curriculum': request.args.get('para_curriculum', type=bool),
+            'completo': request.args.get('completo', type=bool),
+            'search': request.args.get('query', '').strip(),
+            'activo': True  # Solo artículos activos por defecto
+        }
+        
+        # Remover filtros vacíos
+        filters = {k: v for k, v in filters.items() if v is not None and v != ''}
+        
+        logger.info(f"Exportando artículos con filtros: {filters}")
+        
+        # Generar reporte
+        controller = ReportController()
+        excel_file, filename = controller.export_excel(filters)
+        
+        # Enviar archivo
+        return send_file(
+            excel_file,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        logger.error(f"Error exportando a Excel: {str(e)}", exc_info=True)
+        flash(f'Error al generar el archivo Excel: {str(e)}', 'error')
+        return redirect(url_for('articles.index'))
+
+
+@articles_bp.route('/export/preview')
+def export_preview():
+    """
+    Muestra estadísticas de lo que se exportará antes de generar el archivo.
+    GET /articles/export/preview?anio_inicio=2020
+    """
+    try:
+        # Obtener filtros
+        filters = {
+            'tipo_id': request.args.get('tipo_id', type=int),
+            'estado_id': request.args.get('estado_id', type=int),
+            'lgac_id': request.args.get('lgac_id', type=int),
+            'anio_inicio': request.args.get('anio_inicio', type=int),
+            'anio_fin': request.args.get('anio_fin', type=int),
+            'autor_id': request.args.get('autor_id', type=int),
+            'indexacion_id': request.args.get('indexacion_id', type=int),
+            'para_curriculum': request.args.get('para_curriculum', type=bool),
+            'completo': request.args.get('completo', type=bool),
+            'search': request.args.get('query', '').strip(),
+            'activo': True
+        }
+        
+        # Remover filtros vacíos
+        filters = {k: v for k, v in filters.items() if v is not None and v != ''}
+        
+        # Obtener estadísticas
+        controller = ReportController()
+        stats = controller.get_export_statistics(filters)
+        
+        return jsonify(stats)
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo preview: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
