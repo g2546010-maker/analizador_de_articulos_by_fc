@@ -159,17 +159,6 @@
                                     </div>
                                 {% endif %}
                             </div>
-
-                            <!-- Quartil -->
-                            <div class="col-md-4 mb-3">
-                                {{ form.quartil.label(class="form-label") }}
-                                {{ form.quartil(class="form-select" + (" is-invalid" if form.quartil.errors else "")) }}
-                                {% if form.quartil.errors %}
-                                    <div class="invalid-feedback">
-                                        {{ form.quartil.errors[0] }}
-                                    </div>
-                                {% endif %}
-                            </div>
                         </div>
 
                         <div class="row">
@@ -262,6 +251,59 @@
                             </div>
                         </div>
 
+                        <hr class="my-4">
+
+                        <!-- Autores -->
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-people"></i> Autores
+                        </h5>
+
+                        <div id="autores-section">
+                            {% for autor_form in form.autores %}
+                                <div class="row mb-3 autor-row border rounded p-3 bg-light">
+                                    <div class="col-md-6">
+                                        {{ autor_form.autor_id.label(class="form-label required") }}
+                                        {{ autor_form.autor_id(class="form-select" + (" is-invalid" if autor_form.autor_id.errors else "")) }}
+                                        {% if autor_form.autor_id.errors %}
+                                            <div class="invalid-feedback">
+                                                {{ autor_form.autor_id.errors[0] }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        {{ autor_form.orden.label(class="form-label required") }}
+                                        {{ autor_form.orden(class="form-control" + (" is-invalid" if autor_form.orden.errors else ""), type="number", min="1") }}
+                                        {% if autor_form.orden.errors %}
+                                            <div class="invalid-feedback">
+                                                {{ autor_form.orden.errors[0] }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <div class="form-check">
+                                            {{ autor_form.es_corresponsal(class="form-check-input") }}
+                                            {{ autor_form.es_corresponsal.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm btn-danger remove-autor-btn" title="Eliminar autor">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" id="add-autor-btn" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-circle"></i> Agregar autor
+                            </button>
+                        </div>
+
                         <!-- Para curriculum -->
                         <div class="mb-3 form-check">
                             {{ form.para_curriculum(class="form-check-input" + (" is-invalid" if form.para_curriculum.errors else "")) }}
@@ -298,5 +340,100 @@
         content: " *";
         color: #dc3545;
     }
+    
+    .autor-row {
+        position: relative;
+    }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let autorIndex = {{ form.autores|length }};
+    const autoresSection = document.getElementById('autores-section');
+    const addAutorBtn = document.getElementById('add-autor-btn');
+    
+    // Función para eliminar un autor
+    function setupRemoveButtons() {
+        document.querySelectorAll('.remove-autor-btn').forEach(btn => {
+            btn.onclick = function() {
+                this.closest('.autor-row').remove();
+                reorderAutores();
+            };
+        });
+    }
+    
+    // Función para reordenar los índices de autores después de eliminar
+    function reorderAutores() {
+        const autorRows = document.querySelectorAll('.autor-row');
+        autorRows.forEach((row, index) => {
+            // Actualizar nombres de campos
+            const inputs = row.querySelectorAll('select, input');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/autores-\d+/, `autores-${index}`);
+                    input.setAttribute('name', newName);
+                    input.setAttribute('id', newName);
+                }
+            });
+            
+            // Actualizar orden automáticamente
+            const ordenInput = row.querySelector('input[name*="orden"]');
+            if (ordenInput) {
+                ordenInput.value = index + 1;
+            }
+        });
+        autorIndex = autorRows.length;
+    }
+    
+    // Agregar nuevo autor
+    addAutorBtn.onclick = function() {
+        const newRow = document.createElement('div');
+        newRow.className = 'row mb-3 autor-row border rounded p-3 bg-light';
+        newRow.innerHTML = `
+            <div class="col-md-6">
+                <label class="form-label required" for="autores-${autorIndex}-autor_id">Autor</label>
+                <select class="form-select" id="autores-${autorIndex}-autor_id" name="autores-${autorIndex}-autor_id" required>
+                    <option value="">Seleccione un autor</option>
+                    {% for autor in form.autores[0].autor_id.choices if form.autores|length > 0 %}
+                    <option value="{{ autor[0] }}">{{ autor[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label required" for="autores-${autorIndex}-orden">Orden</label>
+                <input class="form-control" id="autores-${autorIndex}-orden" name="autores-${autorIndex}-orden" 
+                       type="number" min="1" value="${autorIndex + 1}" required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="form-check">
+                    <input class="form-check-input" id="autores-${autorIndex}-es_corresponsal" 
+                           name="autores-${autorIndex}-es_corresponsal" type="checkbox" value="y">
+                    <label class="form-check-label" for="autores-${autorIndex}-es_corresponsal">
+                        Autor corresponsal
+                    </label>
+                </div>
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="button" class="btn btn-sm btn-danger remove-autor-btn" title="Eliminar autor">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        autoresSection.appendChild(newRow);
+        autorIndex++;
+        setupRemoveButtons();
+    };
+    
+    // Configurar botones existentes
+    setupRemoveButtons();
+});
+</script>
 {% endblock %}

@@ -62,12 +62,7 @@
                                 {{ articulo.estado.nombre }}
                             </span>
                         {% endif %}
-                        {% if articulo.quartil %}
-                            <span class="badge bg-warning text-dark">
-                                <i class="bi bi-award"></i>
-                                {{ articulo.quartil }}
-                            </span>
-                        {% endif %}
+
                         {% if articulo.activo == false %}
                             <span class="badge bg-danger">
                                 <i class="bi bi-trash"></i>
@@ -197,6 +192,49 @@
                 </div>
             </div>
 
+            <!-- Autores -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people"></i> Autores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if articulo.autores %}
+                        <div class="list-group">
+                            {% for aa in articulo.autores | sort(attribute='orden') %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-secondary me-2">{{ aa.orden }}</span>
+                                            <strong>{{ aa.autor.nombre }} {{ aa.autor.apellidos }}</strong>
+                                            {% if aa.autor.email %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-envelope"></i> {{ aa.autor.email }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if aa.es_corresponsal %}
+                                                <span class="badge bg-primary">Corresponsal</span>
+                                            {% endif %}
+                                            {% if aa.autor.es_miembro_ca %}
+                                                <span class="badge bg-success">Miembro CA</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-info-circle"></i> No hay autores registrados para este artículo.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
             <!-- Clasificación y categorización -->
             <div class="card mb-3">
                 <div class="card-header">

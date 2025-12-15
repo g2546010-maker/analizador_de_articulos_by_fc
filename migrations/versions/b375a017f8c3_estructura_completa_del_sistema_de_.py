@@ -1,8 +1,8 @@
-"""Migracion inicial - estructura completa del sistema
+"""Estructura completa del sistema de articulos
 
-Revision ID: fa44e9f22476
+Revision ID: b375a017f8c3
 Revises: 
-Create Date: 2025-12-12 12:44:21.024901
+Create Date: 2025-12-15 13:05:42.496291
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fa44e9f22476'
+revision = 'b375a017f8c3'
 down_revision = None
 branch_labels = None
 depends_on = None

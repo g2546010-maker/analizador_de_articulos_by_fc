@@ -5,7 +5,7 @@ Incluye validaciones personalizadas y campos dinámicos.
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField, TextAreaField, SelectField, DateField,
-    IntegerField, FloatField, BooleanField, SubmitField
+    IntegerField, FloatField, BooleanField, SubmitField, FieldList, FormField
 )
 from wtforms.validators import (
     DataRequired, Optional, Length, NumberRange, 
@@ -13,6 +13,34 @@ from wtforms.validators import (
 )
 import re
 from datetime import datetime
+
+
+class AuthorSubForm(FlaskForm):
+    """
+    Sub-formulario para un autor individual.
+    """
+    class Meta:
+        csrf = False  # No CSRF para sub-formularios
+    
+    autor_id = SelectField(
+        'Autor',
+        coerce=int,
+        validators=[DataRequired(message='Debe seleccionar un autor')]
+    )
+    
+    orden = IntegerField(
+        'Orden',
+        validators=[
+            DataRequired(message='El orden es obligatorio'),
+            NumberRange(min=1, message='El orden debe ser mayor a 0')
+        ],
+        default=1
+    )
+    
+    es_corresponsal = BooleanField(
+        'Autor corresponsal',
+        default=False
+    )
 
 
 class ArticleForm(FlaskForm):
@@ -179,18 +207,6 @@ class ArticleForm(FlaskForm):
         render_kw={'placeholder': '2.5', 'step': '0.001'}
     )
     
-    quartil = SelectField(
-        'Quartil',
-        choices=[
-            ('', 'No aplica'),
-            ('Q1', 'Q1'),
-            ('Q2', 'Q2'),
-            ('Q3', 'Q3'),
-            ('Q4', 'Q4')
-        ],
-        validators=[Optional()]
-    )
-    
     citas = IntegerField(
         'Número de citas',
         validators=[
@@ -199,6 +215,13 @@ class ArticleForm(FlaskForm):
         ],
         default=0,
         render_kw={'placeholder': '0'}
+    )
+    
+    # === Autores ===
+    autores = FieldList(
+        FormField(AuthorSubForm),
+        min_entries=0,
+        max_entries=20
     )
     
     # === Opciones ===
@@ -281,15 +304,6 @@ class ArticleForm(FlaskForm):
                 raise ValidationError(
                     'La fecha de aceptación debe ser anterior a la de publicación'
                 )
-    
-    def validate_quartil(self, field):
-        """
-        Valida que el quartil sea válido si se proporciona.
-        """
-        if field.data and field.data not in ['', 'Q1', 'Q2', 'Q3', 'Q4']:
-            raise ValidationError(
-                'Quartil inválido. Debe ser Q1, Q2, Q3 o Q4'
-            )
 
 
 class ArticleSearchForm(FlaskForm):

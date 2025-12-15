@@ -94,7 +94,6 @@ def new():
             'nombre_congreso': form.nombre_congreso.data,
             'para_curriculum': form.para_curriculum.data,
             'factor_impacto': form.factor_impacto.data,
-            'quartil': form.quartil.data,
             'citas': form.citas.data if form.citas.data else 0,
         }
         
@@ -104,6 +103,27 @@ def new():
         if error:
             flash(f'Error al crear artículo: {error}', 'error')
         else:
+            # Procesar autores si se creó el artículo exitosamente
+            if form.autores.data:
+                from app.models import ArticuloAutor, Autor
+                from app import db
+                
+                for autor_data in form.autores.data:
+                    if autor_data.get('autor_id'):
+                        articulo_autor = ArticuloAutor(
+                            articulo_id=articulo.id,
+                            autor_id=autor_data['autor_id'],
+                            orden=autor_data.get('orden', 1),
+                            es_corresponsal=autor_data.get('es_corresponsal', False)
+                        )
+                        db.session.add(articulo_autor)
+                
+                try:
+                    db.session.commit()
+                except Exception as e:
+                    logger.error(f"Error al agregar autores: {str(e)}")
+                    flash('Artículo creado pero hubo error al agregar autores', 'warning')
+            
             flash(f'Artículo "{articulo.titulo}" creado exitosamente', 'success')
             return redirect(url_for('articles.show', id=articulo.id))
     
@@ -144,6 +164,25 @@ def edit(id):
     
     # Poblar campos de selección
     populate_form_choices(form)
+    
+    # Cargar autores existentes en modo GET
+    if request.method == 'GET':
+        from app.models import ArticuloAutor
+        articulo_autores = ArticuloAutor.query.filter_by(articulo_id=articulo.id).order_by(ArticuloAutor.orden).all()
+        
+        # Limpiar y agregar entradas de autores
+        while len(form.autores) > 0:
+            form.autores.pop_entry()
+        
+        for aa in articulo_autores:
+            form.autores.append_entry({
+                'autor_id': aa.autor_id,
+                'orden': aa.orden,
+                'es_corresponsal': aa.es_corresponsal
+            })
+        
+        # Poblar choices de los autores recién agregados
+        populate_form_choices(form)
     
     if form.validate_on_submit():
         # Extraer solo campos modificados
@@ -189,12 +228,37 @@ def edit(id):
             data['para_curriculum'] = form.para_curriculum.data
         if form.factor_impacto.data != articulo.factor_impacto:
             data['factor_impacto'] = form.factor_impacto.data
-        if form.quartil.data != articulo.quartil:
-            data['quartil'] = form.quartil.data
         if form.citas.data != articulo.citas:
             data['citas'] = form.citas.data if form.citas.data else 0
         
-        # Si hay cambios, actualizar
+        # Actualizar autores
+        from app.models import ArticuloAutor
+        from app import db
+        
+        # Eliminar autores actuales
+        ArticuloAutor.query.filter_by(articulo_id=id).delete()
+        
+        # Agregar nuevos autores
+        if form.autores.data:
+            for autor_data in form.autores.data:
+                if autor_data.get('autor_id'):
+                    articulo_autor = ArticuloAutor(
+                        articulo_id=id,
+                        autor_id=autor_data['autor_id'],
+                        orden=autor_data.get('orden', 1),
+                        es_corresponsal=autor_data.get('es_corresponsal', False)
+                    )
+                    db.session.add(articulo_autor)
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error al actualizar autores: {str(e)}")
+            flash('Error al actualizar autores', 'error')
+            return render_template('articles/form.html', form=form, articulo=articulo)
+        
+        # Si hay cambios en el artículo, actualizar
         if data:
             articulo_actualizado, error = ArticleController.update(id, data)
             
@@ -204,7 +268,7 @@ def edit(id):
                 flash(f'Artículo "{articulo_actualizado.titulo}" actualizado exitosamente', 'success')
                 return redirect(url_for('articles.show', id=articulo_actualizado.id))
         else:
-            flash('No se detectaron cambios', 'info')
+            flash('Artículo actualizado exitosamente', 'success')
             return redirect(url_for('articles.show', id=id))
     
     return render_template('articles/form.html', form=form, articulo=articulo)

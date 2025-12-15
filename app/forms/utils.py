@@ -101,6 +101,13 @@ def populate_form_choices(form):
     if hasattr(form, 'autor_id'):
         form.autor_id.choices = populate_autor_choices()
     
+    # Poblar choices de autores en sub-formularios
+    if hasattr(form, 'autores'):
+        autor_choices = populate_autor_choices()
+        for autor_form in form.autores:
+            if hasattr(autor_form, 'autor_id'):
+                autor_form.autor_id.choices = autor_choices
+    
     return form
 
 

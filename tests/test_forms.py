@@ -154,18 +154,6 @@ class TestArticleForm:
             with pytest.raises(ValidationError):
                 form.validate_fecha_aceptacion(form.fecha_aceptacion)
     
-    def test_quartil_validation_valid(self, app):
-        """Test validación de quartil con valor válido."""
-        with app.app_context():
-            form = ArticleForm()
-            form.quartil.data = 'Q1'
-            
-            try:
-                form.validate_quartil(form.quartil)
-                assert True
-            except Exception:
-                pytest.fail("Quartil válido fue rechazado")
-    
     def test_populate_form_choices(self, app, db_session, catalogs):
         """Test que los campos dinámicos se pueblan correctamente."""
         with app.app_context():

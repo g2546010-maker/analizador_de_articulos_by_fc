@@ -247,6 +247,48 @@ class PDFBatchProcessor:
         )
         
         db.session.add(articulo)
+        db.session.flush()  # Para obtener el ID del artículo
+        
+        # Crear autores si se extrajeron
+        if metadata.get('autores'):
+            from app.models.autor import Autor
+            from app.models.relations import ArticuloAutor
+            
+            for idx, autor_nombre in enumerate(metadata['autores'], start=1):
+                # Intentar parsear nombre y apellidos
+                partes = autor_nombre.strip().split()
+                if len(partes) >= 2:
+                    nombre = partes[0]
+                    apellidos = ' '.join(partes[1:])
+                else:
+                    nombre = autor_nombre
+                    apellidos = ''
+                
+                # Buscar o crear autor
+                autor = Autor.query.filter_by(
+                    nombre=nombre,
+                    apellidos=apellidos
+                ).first()
+                
+                if not autor:
+                    autor = Autor(
+                        nombre=nombre,
+                        apellidos=apellidos,
+                        es_miembro_ca=False,
+                        activo=True
+                    )
+                    db.session.add(autor)
+                    db.session.flush()
+                
+                # Crear relación artículo-autor
+                articulo_autor = ArticuloAutor(
+                    articulo_id=articulo.id,
+                    autor_id=autor.id,
+                    orden=idx,
+                    es_corresponsal=(idx == 1)  # Primer autor como corresponsal
+                )
+                db.session.add(articulo_autor)
+        
         db.session.commit()
         
         return articulo

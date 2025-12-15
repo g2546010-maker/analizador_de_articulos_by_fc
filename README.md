@@ -31,6 +31,28 @@ Aplicación web local desarrollada en Python con Flask para el registro, consult
 - pip (gestor de paquetes de Python)
 - Navegador web moderno (Chrome, Firefox, Edge)
 
+## 🚀 Inicio Rápido
+
+Si ya tienes el proyecto y solo quieres ejecutarlo:
+
+```bash
+# 1. Activar ambiente virtual
+.\venv\Scripts\Activate.ps1  # Windows PowerShell
+# o
+source venv/bin/activate  # Linux/Mac
+
+# 2. Si es la PRIMERA VEZ, inicializar base de datos:
+flask db upgrade
+python scripts/seed_catalogs.py
+
+# 3. Ejecutar la aplicación
+python run.py
+```
+
+> ⚠️ **IMPORTANTE**: Si ves errores de "no such table", significa que no has inicializado la base de datos. Ejecuta los comandos del paso 2.
+
+---
+
 ## Instalación y Configuración Inicial
 
 ### 1. Clonar o Descargar el Proyecto
@@ -89,11 +111,11 @@ Esto instalará todas las librerías necesarias:
 
 > **Nota**: Con Python 3.12, todos los paquetes se instalan correctamente, incluyendo pikepdf y regex que requieren compilación C++.
 
-### 4. Inicializar la Base de Datos
+### 4. Inicializar la Base de Datos ⚠️ **PASO OBLIGATORIO**
 
 La base de datos se crea automáticamente en la carpeta `instance/` al ejecutar las migraciones.
 
-#### Primera vez iniciando el proyecto:
+#### ✅ Primera vez iniciando el proyecto:
 
 ```bash
 # Aplicar las migraciones existentes para crear la base de datos
@@ -104,6 +126,19 @@ python scripts/seed_catalogs.py
 ```
 
 **¡Importante!** Ejecuta `seed_catalogs.py` solo la primera vez. Este script llena las tablas de catálogos con datos iniciales necesarios para el funcionamiento del sistema.
+
+**Verificar que funcionó:**
+
+```bash
+# Debe existir el archivo de base de datos
+# Windows:
+dir instance\articulos.db
+
+# Linux/Mac:
+ls -l instance/articulos.db
+```
+
+> 🔴 **ERROR COMÚN**: Si al subir PDFs ves "no such table: tipos_produccion", significa que NO ejecutaste este paso. Detén el servidor y ejecuta los comandos de arriba.
 
 #### Si necesitas reiniciar la base de datos:
 
@@ -126,11 +161,23 @@ python scripts/seed_catalogs.py
 
 ### 5. Ejecutar la Aplicación
 
+> ⚠️ **ANTES DE EJECUTAR**: Asegúrate de haber completado el paso 4 (Inicializar la Base de Datos)
+
 ```bash
 python run.py
 ```
 
 La aplicación estará disponible en: **http://localhost:5000**
+
+**Si ves errores al subir PDFs:**
+
+```bash
+# Detén el servidor (Ctrl+C) y ejecuta:
+flask db upgrade
+python scripts/seed_catalogs.py
+# Luego vuelve a ejecutar:
+python run.py
+```
 
 ### 6. Verificar la Instalación
 
