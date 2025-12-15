@@ -114,16 +114,16 @@ Este documento presenta el roadmap detallado para implementar el MVP (Producto M
    - [x] Generar nombres únicos de archivo
    - [x] Implementar limpieza de archivos antiguos
 
-10. **Servicio de Extracción PDF** (3 días)
+10. **Servicio de Extracción PDF** (3 días) ✅
 
-    - [ ] Crear `PDFService.extract_text()`
-    - [ ] Implementar extracción de título
-    - [ ] Implementar extracción de autores
-    - [ ] Implementar extracción de año
-    - [ ] Implementar extracción de DOI
-    - [ ] Implementar extracción de ISSN
-    - [ ] Implementar extracción de resumen
-    - [ ] Manejo de errores y PDFs mal formateados
+    - [x] Crear `PDFService.extract_text()`
+    - [x] Implementar extracción de título
+    - [x] Implementar extracción de autores
+    - [x] Implementar extracción de año
+    - [x] Implementar extracción de DOI
+    - [x] Implementar extracción de ISSN
+    - [x] Implementar extracción de resumen
+    - [x] Manejo de errores y PDFs mal formateados
 
 11. **Integración Upload + Extracción** (2 días)
 
